@@ -3,6 +3,7 @@ import argparse
 import os
 
 from experiment import Experiment
+from utils import save_args
 
 
 if __name__ == '__main__':
@@ -28,7 +29,10 @@ if __name__ == '__main__':
 
     args, unknown_args = parser.parse_known_args()
 
+    args.output_dir = './results/exp1.0'
+
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
+    save_args(args.output_dir, args)
     Experiment(args).run()
