@@ -36,8 +36,10 @@ class Experiment():
         self.G = Generator(args.nz, args.ngf, args.nc).to(args.device)
         self.D = Discriminator(args.nc, args.ndf).to(args.device)
         self.criterion = nn.BCELoss()
-        self.optimizer_G = optim.Adam(self.G.parameters(), lr=args.lr)
-        self.optimizer_D = optim.Adam(self.D.parameters(), lr=args.lr)
+        self.optimizer_G = optim.Adam(
+            self.G.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
+        self.optimizer_D = optim.Adam(
+            self.D.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 
         self.real_label = 1
         self.fake_label = 0

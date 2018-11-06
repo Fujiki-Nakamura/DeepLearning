@@ -20,6 +20,8 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--lr', type=float, default=0.0002)
+    parser.add_argument('--beta1', type=float, default=0.5)
+    parser.add_argument('--beta2', type=float, default=0.999)
     # log
     parser.add_argument('--log_freq', type=int, default=100)
     parser.add_argument('--output_dir', type=str, default='./results')
