@@ -44,11 +44,13 @@ def validate(dataloader, model, criterion, logger=None, args=None):
 
 def step(input_, target, model, criterion, args):
     bs, ts, h, w = target.size()
+    input_ = input_.float() / 255.
+    target = target.float() / 255.
     input_, target = input_.to(args.device), target.to(args.device)
-    output = model(input_, target)
+    output = model(input_.unsqueeze(2), target.unsqueeze(2))
 
-    # (bs, ts, h, w) -> (ts, bs, h, w)
-    output = output.permute(1, 0, 2, 3)
+    # (bs, ts, c, h, w) -> (bs, ts, h, w) -> (ts, bs, h, w)
+    output = output.squeeze(2).permute(1, 0, 2, 3)
     # (bs, ts, h, w) -> (ts, bs, h, w)
     target = target.permute(1, 0, 2, 3)
 

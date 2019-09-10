@@ -9,20 +9,19 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         self.device = args.device
         self.input_dim = args.channels
-        self.hidden_dim = 16
+        self.hidden_dim = args.hidden_dim
         self.h = args.height
         self.w = args.width
         self.convlstm1 = Conv2dLSTMCell(
-            args.input_dim, args.hidden_dim,
-            kernel_size=(args.kernel_size, args.kernel_size),
-            stride=args.stride, padding=args.kernel_size // 2)
+            self.input_dim, self.hidden_dim,
+            kernel_size=args.kernel_size,
+            stride=args.stride, padding=(args.kernel_size[0] // 2, args.kernel_size[1]))
 
     def forward(self, input_):
-        bs, ts, h, w = input_.size()
+        bs, ts, c, h, w = input_.size()
         h_0, c_0 = self.init_hidden(bs)
         for ti in range(ts):
-            h_1, (h_1, c_1) = self.convlstm1(
-                input_[:, ti, :, :], (h_0, c_0))
+            h_1, (h_1, c_1) = self.convlstm1(input_[:, ti, :, :, :], (h_0, c_0))
             h_0, c_0 = h_1, c_1
         out = None  # TODO?
 
@@ -41,13 +40,13 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
         self.device = args.device
         self.input_dim = args.channels
-        self.hidden_dim = 16
+        self.hidden_dim = args.hidden_dim
         self.teacher_forcing_ratio = args.teacher_forcing_ratio
 
         self.convlstm1 = Conv2dLSTMCell(
-            args.input_dim, args.hidden_dim,
-            kernel_size=(args.kernel_size, args.kernel_size),
-            stride=args.stride, padding=args.kernel_size // 2)
+            self.input_dim, self.hidden_dim,
+            kernel_size=args.kernel_size,
+            stride=args.stride, padding=(args.kernel_size[0] // 2, args.kernel_size[1]))
         self.conv1x1 = nn.Conv2d(
             self.hidden_dim, self.input_dim, kernel_size=(1, 1), stride=1)
         self.sigmoid = nn.Sigmoid()
@@ -56,15 +55,15 @@ class Decoder(nn.Module):
 
     def forward(self, input_, target, h_0_and_c_0):
         h_0, c_0 = h_0_and_c_0
-        bs, ts, h, w = target.size()
-        input_current = input_[:, -1, :, :]
-        output = torch.zeros(bs, ts, h, w)
+        bs, ts, c, h, w = target.size()
+        input_current = input_[:, -1, :, :, :]
+        output = torch.zeros(bs, ts, c, h, w)
         for ti in range(ts):
             h_1, (h_1, c_1) = self.convlstm1(input_current, (h_0, c_0))
             out = self.sigmoid(self.conv1x1(h_1))
-            output[:, ti, :, :] = out
+            output[:, ti, :, :, :] = out
             if random.random() < self.teacher_forcing_ratio:
-                input_current = target[:, ti, :, :]
+                input_current = target[:, ti, :, :, :]
             else:
                 input_current = out
 

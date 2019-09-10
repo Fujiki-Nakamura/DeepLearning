@@ -20,7 +20,7 @@ def run(args):
     args.logdir = get_logdir(args)
     logger = get_logger(os.path.join(args.logdir, 'main.log'))
     logger.info(args)
-    writer = SummaryWriter(args.log_dir)
+    writer = SummaryWriter(args.logdir)
 
     # data
     train_set = MovingMNIST(root='./data', train=True, download=True)
@@ -78,7 +78,7 @@ def run(args):
             'valid/{}'.args.loss: validation[args.loss],
             'best/{}'.args.loss: best_loss,
             'optimizer': optimizer.state_dict(),
-        }, is_best, args.log_dir)
+        }, is_best, args.logdir)
 
         if scheduler is not None:
             scheduler.step(epoch=epoch_i)

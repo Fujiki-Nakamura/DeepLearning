@@ -66,11 +66,11 @@ def get_logger(log_file):
     return logger
 
 
-def save_checkpoint(state, is_best, log_dir):
-    filename = os.path.join(log_dir, 'checkpoint.pt')
+def save_checkpoint(state, is_best, logdir):
+    filename = os.path.join(logdir, 'checkpoint.pt')
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, os.path.join(log_dir, 'best.pt'))
+        shutil.copyfile(filename, os.path.join(logdir, 'best.pt'))
 
 
 class AverageMeter(object):
