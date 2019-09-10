@@ -80,8 +80,8 @@ def run(args):
         save_checkpoint({
             'epoch': epoch_i,
             'state_dict': model.state_dict(),
-            'valid/{}'.args.loss: validation[args.loss],
-            'best/{}'.args.loss: best_loss,
+            'valid/{}'.format(args.loss): validation[args.loss],
+            'best/{}'.format(args.loss): best_loss,
             'optimizer': optimizer.state_dict(),
         }, is_best, args.logdir)
 
