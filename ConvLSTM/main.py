@@ -38,6 +38,7 @@ if __name__ == '__main__':
     parser.add_argument('--expid', type=str, default='')
     parser.add_argument('--resume', type=str, default=None)
     parser.add_argument('--random_seed', type=int, default=42)
+    parser.add_argument('--debug', action='store_true', default=False)
 
     args, _ = parser.parse_known_args()
     run(args)

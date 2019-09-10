@@ -19,6 +19,7 @@ def train(dataloader, model, criterion, optimizer, logger=None, args=None):
         optimizer.step()
 
         pbar.update(1)
+        if args.debug: break  # noqa
     pbar.close()
 
     return {args.loss: losses.avg}
@@ -37,6 +38,7 @@ def validate(dataloader, model, criterion, logger=None, args=None):
         losses.update(loss.item(), n)
 
         pbar.update(1)
+        if args.debug: break  # noqa
     pbar.close()
 
     return {args.loss: losses.avg}
