@@ -12,10 +12,11 @@ class Encoder(nn.Module):
         self.hidden_dim = args.hidden_dim
         self.h = args.height
         self.w = args.width
+        _padding = tuple([ks // 2 for ks in args.kernel_size])
         self.convlstm1 = Conv2dLSTMCell(
             self.input_dim, self.hidden_dim,
             kernel_size=args.kernel_size,
-            stride=args.stride, padding=(args.kernel_size[0] // 2, args.kernel_size[1]))
+            stride=args.stride, padding=_padding)
 
     def forward(self, input_):
         bs, ts, c, h, w = input_.size()
@@ -43,10 +44,11 @@ class Decoder(nn.Module):
         self.hidden_dim = args.hidden_dim
         self.teacher_forcing_ratio = args.teacher_forcing_ratio
 
+        _padding = tuple([ks // 2 for ks in args.kernel_size])
         self.convlstm1 = Conv2dLSTMCell(
             self.input_dim, self.hidden_dim,
             kernel_size=args.kernel_size,
-            stride=args.stride, padding=(args.kernel_size[0] // 2, args.kernel_size[1]))
+            stride=args.stride, padding=_padding)
         self.conv1x1 = nn.Conv2d(
             self.hidden_dim, self.input_dim, kernel_size=(1, 1), stride=1)
         self.sigmoid = nn.Sigmoid()
@@ -57,7 +59,7 @@ class Decoder(nn.Module):
         h_0, c_0 = h_0_and_c_0
         bs, ts, c, h, w = target.size()
         input_current = input_[:, -1, :, :, :]
-        output = torch.zeros(bs, ts, c, h, w)
+        output = torch.zeros(bs, ts, c, h, w, device=self.device)
         for ti in range(ts):
             h_1, (h_1, c_1) = self.convlstm1(input_current, (h_0, c_0))
             out = self.sigmoid(self.conv1x1(h_1))
@@ -74,7 +76,7 @@ class ConvLSTM(nn.Module):
     def __init__(self, args):
         super(ConvLSTM, self).__init__()
         self.encoder = Encoder(args)
-        self.decocer = Decoder(args)
+        self.decoder = Decoder(args)
 
     def forward(self, input_, target):
         o_enc, h_and_c_enc = self.encoder(input_)

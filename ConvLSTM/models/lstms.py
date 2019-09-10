@@ -130,7 +130,7 @@ class Conv2dLSTMCell(nn.Module):
         wxhc = wx + wh + torch.cat(
             (wc[:, :2 * self.out_channels],
              Variable(self.wc_blank).expand(
-                 wc.size(0), wc.size(1) // 3, wc.size(2), wc.size(3)),
+                 wc.size(0), wc.size(2), wc.size(3), wc.size(1) // 3).permute(0, 3, 1, 2),
              wc[:, 2 * self.out_channels:]), 1)
 
         i = F.sigmoid(wxhc[:, :self.out_channels])
