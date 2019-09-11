@@ -22,6 +22,11 @@ def train(dataloader, model, criterion, optimizer, logger=None, args=None):
         if args.debug: break  # noqa
     pbar.close()
 
+    logger.debug(
+        'output/min {} output/max {} target/min {} target/max {}'.format(
+            output.min().item(), output.max().item(),
+            _target.min().item(), _target.max().item()))
+
     return {args.loss: losses.avg, 'output': output.cpu(), 'target': _target.cpu()}
 
 

@@ -60,7 +60,7 @@ def get_logger(log_file):
         formatter = Formatter('%(asctime)s - %(message)s')
         handler.setFormatter(formatter)
     logger = getLogger('log')
-    logger.setLevel(INFO)
+    logger.setLevel(DEBUG)
     logger.addHandler(fh)
     logger.addHandler(sh)
     return logger
