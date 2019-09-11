@@ -60,8 +60,12 @@ def run(args):
         validation = validate(
             valid_loader, model, criterion, logger=logger, args=args)
 
-        writer.add_scalar('Train/{}'.format(args.loss), training[args.loss], epoch_i)
-        writer.add_scalar('Valid/{}'.format(args.loss), validation[args.loss], epoch_i)
+        writer.add_scalar(
+            'Train/{}-{}'.format(args.loss, args.reduction), training[args.loss],
+            epoch_i)
+        writer.add_scalar(
+            'Valid/{}-{}'.format(args.loss, args.reduction), validation[args.loss],
+            epoch_i)
         writer.add_image(
             'Train/Predict', _get_images(training['output'], args), epoch_i)
         writer.add_image(
@@ -71,6 +75,7 @@ def run(args):
         writer.add_image(
             'Valid/Target', _get_images(validation['target'], args), epoch_i)
 
+        message = '[{}] Epoch {} Train/{} {:.4f} Valid/{} {:.4f} '
         message = message.format(
             args.expid, epoch_i,
             args.loss, training[args.loss],
@@ -84,8 +89,8 @@ def run(args):
         save_checkpoint({
             'epoch': epoch_i,
             'state_dict': model.state_dict(),
-            'valid/{}'.format(args.loss): validation[args.loss],
-            'best/{}'.format(args.loss): best_loss,
+            'valid/{}-{}'.format(args.loss, args.reduction): validation[args.loss],
+            'best/{}-{}'.format(args.loss, args.reduction): best_loss,
             'optimizer': optimizer.state_dict(),
         }, is_best, args.logdir)
 

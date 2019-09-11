@@ -11,7 +11,7 @@ def train(dataloader, model, criterion, optimizer, logger=None, args=None):
         bs, ts, h, w = target.size()
         output, _target, loss = step(
             input_, target, model, criterion, args=args)
-        n = bs * h * w if args.reduction.lower().startswith('mean') else bs
+        n = bs * h * w if args.reduction.lower().startswith('mean') else bs * ts
         losses.update(loss.item(), n)
 
         optimizer.zero_grad()
@@ -39,7 +39,7 @@ def validate(dataloader, model, criterion, logger=None, args=None):
         with torch.no_grad():
             output, _target, loss = step(
                 input_, target, model, criterion, args=args)
-        n = bs * h * w if args.reduction.lower().startswith('mean') else bs
+        n = bs * h * w if args.reduction.lower().startswith('mean') else bs * ts
         losses.update(loss.item(), n)
 
         pbar.update(1)
@@ -67,7 +67,7 @@ def step(input_, target, model, criterion, args):
         if args.reduction.lower().startswith('mean'):
             loss += criterion(output[t_i], target[t_i])
         else:
-            loss += criterion(output[t_i], target[t_i]) / bs
+            loss += criterion(output[t_i], target[t_i]) / bs / ts
 
     # output, target returned in batch_first shape
     return output.permute(1, 0, 2, 3), target.permute(1, 0, 2, 3), loss
