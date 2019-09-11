@@ -9,7 +9,7 @@ def train(dataloader, model, criterion, optimizer, logger=None, args=None):
     pbar = tqdm(total=len(dataloader))
     for i, (input_, target) in enumerate(dataloader):
         bs, ts, h, w = target.size()
-        output, loss = step(
+        output, _target, loss = step(
             input_, target, model, criterion, args=args)
         n = bs * h * w if args.reduction.lower().startswith('mean') else bs
         losses.update(loss.item(), n)
@@ -22,7 +22,7 @@ def train(dataloader, model, criterion, optimizer, logger=None, args=None):
         if args.debug: break  # noqa
     pbar.close()
 
-    return {args.loss: losses.avg}
+    return {args.loss: losses.avg, 'output': output.cpu(), 'target': _target.cpu()}
 
 
 def validate(dataloader, model, criterion, logger=None, args=None):
@@ -32,7 +32,7 @@ def validate(dataloader, model, criterion, logger=None, args=None):
     for i, (input_, target) in enumerate(dataloader):
         bs, ts, h, w = target.size()
         with torch.no_grad():
-            output, loss = step(
+            output, _target, loss = step(
                 input_, target, model, criterion, args=args)
         n = bs * h * w if args.reduction.lower().startswith('mean') else bs
         losses.update(loss.item(), n)
@@ -41,7 +41,7 @@ def validate(dataloader, model, criterion, logger=None, args=None):
         if args.debug: break  # noqa
     pbar.close()
 
-    return {args.loss: losses.avg, 'output': output.cpu(), 'target': target.cpu()}
+    return {args.loss: losses.avg, 'output': output.cpu(), 'target': _target.cpu()}
 
 
 def step(input_, target, model, criterion, args):
@@ -64,4 +64,5 @@ def step(input_, target, model, criterion, args):
         else:
             loss += criterion(output[t_i], target[t_i]) / bs
 
-    return output.permute(1, 0, 2, 3), loss
+    # output, target returned in batch_first shape
+    return output.permute(1, 0, 2, 3), target.permute(1, 0, 2, 3), loss

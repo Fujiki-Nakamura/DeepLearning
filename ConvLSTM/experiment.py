@@ -63,10 +63,14 @@ def run(args):
         writer.add_scalar('Train/{}'.format(args.loss), training[args.loss], epoch_i)
         writer.add_scalar('Valid/{}'.format(args.loss), validation[args.loss], epoch_i)
         writer.add_image(
-            'Image/Predict', _get_images(validation['output'], args), epoch_i)
+            'Train/Predict', _get_images(training['output'], args), epoch_i)
         writer.add_image(
-            'Image/Target', _get_images(validation['target'], args), epoch_i)
-        message = '[{}] Epoch {} Train/{} {:.2f} Valid/{} {:.2f} '
+            'Train/Target', _get_images(training['target'], args), epoch_i)
+        writer.add_image(
+            'Valid/Predict', _get_images(validation['output'], args), epoch_i)
+        writer.add_image(
+            'Valid/Target', _get_images(validation['target'], args), epoch_i)
+
         message = message.format(
             args.expid, epoch_i,
             args.loss, training[args.loss],
@@ -95,5 +99,7 @@ def run(args):
 
 
 def _get_images(output, args):
-    _ims = output.unsqueeze(2).view(-1, args.channels, args.height, args.width)
-    return vutils.make_grid(_ims, nrow=10)
+    sample_i = 50
+    # (bs, ts, h, w) -> (bs, ts, c, h, w) -> (bs * ts, c, h, w)
+    _ims = output.unsqueeze(2)[:sample_i].view(-1, args.channels, args.height, args.width)
+    return vutils.make_grid(_ims, nrow=10, scale_each=True)
