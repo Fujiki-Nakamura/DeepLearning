@@ -41,7 +41,7 @@ def get_scheduler(optimizer, args):
 
 def get_logdir(args):
     if args.expid == '':
-        args.expid = dt.datetime.now().strftime('%Y%m%d%H%M')
+        args.expid = dt.datetime.now().strftime('%Y%m%d%H%M%S')
     logdir = os.path.join(args.logdir, args.expid)
     if not os.path.exists(logdir):
         os.makedirs(logdir)
