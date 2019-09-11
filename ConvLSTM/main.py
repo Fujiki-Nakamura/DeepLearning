@@ -17,13 +17,14 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, default='convlstm1layer')
     parser.add_argument('--kernel_size', type=int, nargs='+', default=(5, 5))
     parser.add_argument('--stride', type=int, default=1)
-    parser.add_argument('--hidden_dim', type=int, default=16)
+    parser.add_argument('--hidden_dims', type=int, nargs='+', default=[16, ])
+    parser.add_argument('--n_layers', type=int, default=1)
     parser.add_argument('--teacher_forcing_ratio', type=float, default=0.5)
     # training
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--device', type=str, default='cuda:0')
-    parser.add_argument('--loss', type=str, default='BCE')
+    parser.add_argument('--loss', type=str, default='MSE')
     parser.add_argument('--reduction', type=str, default='mean')
     # optim
     parser.add_argument('--optim', type=str, default='adam')
