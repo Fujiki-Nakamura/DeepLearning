@@ -6,7 +6,7 @@ from torch import nn, optim
 
 
 def get_loss_fn(args):
-    if args.loss.lower().startswith('bce'):
+    if args.loss.lower().startswith('bcewithlogitsloss'):
         loss_fn = nn.BCEWithLogitsLoss(reduction=args.reduction)
     elif args.loss.lower().startswith('mse'):
         loss_fn = nn.MSELoss(reduction=args.reduction)
