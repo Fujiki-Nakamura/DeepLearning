@@ -63,11 +63,12 @@ def step(input_, target, model, criterion, args):
 
     assert len(output) == len(target) == ts
     loss = 0.
+    reduction = args.loss.split('/')[-1].lower()
     for t_i in range(ts):
-        if args.reduction.lower().startswith('mean'):
-            loss += criterion(output[t_i], target[t_i])
-        else:
+        if reduction == 'image':
             loss += criterion(output[t_i], target[t_i]) / bs / ts
+        elif args.reduction.lower().startswith('mean'):
+            loss += criterion(output[t_i], target[t_i])
 
     # output, target returned in batch_first shape
     return output.permute(1, 0, 2, 3), target.permute(1, 0, 2, 3), loss
