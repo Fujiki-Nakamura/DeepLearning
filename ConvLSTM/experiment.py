@@ -104,7 +104,6 @@ def run(args):
 
 
 def _get_images(output, args):
-    sample_i = 50
     # (bs, ts, h, w) -> (bs, ts, c, h, w) -> (bs * ts, c, h, w)
-    _ims = output.unsqueeze(2)[:sample_i].view(-1, args.channels, args.height, args.width)
-    return vutils.make_grid(_ims, nrow=10, scale_each=True)
+    _ims = output.unsqueeze(2).view(-1, args.channels, args.height, args.width)
+    return vutils.make_grid(_ims, nrow=5, scale_each=True)
