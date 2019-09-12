@@ -11,8 +11,8 @@ def train(dataloader, model, criterion, optimizer, logger=None, args=None):
         bs, ts, h, w = target.size()
         output, _target, loss = step(
             input_, target, model, criterion, args=args)
-        n = bs * h * w if args.reduction.lower().startswith('mean') else bs * ts
-        losses.update(loss.item(), n)
+        n_elements = _get_n_elements(bs, ts, h, w, args)
+        losses.update(loss.item(), n_elements)
 
         optimizer.zero_grad()
         loss.backward()
@@ -39,8 +39,8 @@ def validate(dataloader, model, criterion, logger=None, args=None):
         with torch.no_grad():
             output, _target, loss = step(
                 input_, target, model, criterion, args=args)
-        n = bs * h * w if args.reduction.lower().startswith('mean') else bs * ts
-        losses.update(loss.item(), n)
+        n_elements = _get_n_elements(bs, ts, h, w, args)
+        losses.update(loss.item(), n_elements)
 
         pbar.update(1)
         if args.debug: break  # noqa
@@ -72,3 +72,12 @@ def step(input_, target, model, criterion, args):
 
     # output, target returned in batch_first shape
     return output.permute(1, 0, 2, 3), target.permute(1, 0, 2, 3), loss
+
+
+def _get_n_elements(bs, ts, h, w, args):
+    reduction = args.loss.split('/')[-1].lower()
+    if reduction == 'image':
+        n = bs * ts
+    elif args.reduction.lower().startswith('mean'):
+        n = bs * h * w
+    return n
