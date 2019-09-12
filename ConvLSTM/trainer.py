@@ -22,6 +22,8 @@ def train(dataloader, model, criterion, optimizer, logger=None, args=None):
         if args.debug: break  # noqa
     pbar.close()
 
+    if args.loss.lower().startswith('bce'):
+        output = torch.sigmoid(output)
     logger.debug(
         'output/min {} output/max {} target/min {} target/max {}'.format(
             output.min().item(), output.max().item(),
@@ -45,6 +47,9 @@ def validate(dataloader, model, criterion, logger=None, args=None):
         pbar.update(1)
         if args.debug: break  # noqa
     pbar.close()
+
+    if args.loss.lower().startswith('bce'):
+        output = torch.sigmoid(output)
 
     return {args.loss: losses.avg, 'output': output.cpu(), 'target': _target.cpu()}
 
