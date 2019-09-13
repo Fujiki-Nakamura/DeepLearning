@@ -6,12 +6,17 @@ from torch import nn, optim
 
 
 def get_loss_fn(args):
-    if args.loss.lower().startswith('bcewithlogitsloss'):
-        loss_fn = nn.BCEWithLogitsLoss(reduction=args.reduction)
-    elif args.loss.lower() == 'bce/image':
-        loss_fn = nn.BCEWithLogitsLoss(reduction='sum')
-    elif args.loss.lower().startswith('mse'):
-        loss_fn = nn.MSELoss(reduction=args.reduction)
+    # {BCE,MSE,L1}/{Seq,Image,Pixel}
+    loss_name_and_reduction = args.loss.lower().split('/')
+    assert len(loss_name_and_reduction) == 2
+
+    loss_name, reduction = loss_name_and_reduction
+    r = 'mean' if reduction == 'pixel' else 'sum'
+
+    if loss_name == 'bce':
+        loss_fn = nn.BCEWithLogitsLoss(reduction=r)
+    elif loss_name.startswith('mse'):
+        loss_fn = nn.MSELoss(reduction=r)
     elif args.loss.lower().startswith('l1'):
         loss_fn = nn.L1Loss(reduction=args.reduction)
     else:
