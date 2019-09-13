@@ -69,11 +69,12 @@ def step(input_, target, model, criterion, args):
     assert len(output) == len(target) == ts
     loss = 0.
     reduction = args.loss.split('/')[-1].lower()
-    for t_i in range(ts):
-        if reduction == 'image':
-            loss += criterion(output[t_i], target[t_i]) / bs / ts
-        elif args.reduction.lower().startswith('mean'):
-            loss += criterion(output[t_i], target[t_i])
+    if reduction == 'image':
+        loss = criterion(output, target) / bs / ts
+    elif reduction == 'pixel':
+        loss = criterion(output, target)
+    else:
+        raise NotImplementedError
 
     # output, target returned in batch_first shape
     return output.permute(1, 0, 2, 3), target.permute(1, 0, 2, 3), loss
@@ -83,6 +84,8 @@ def _get_n_elements(bs, ts, h, w, args):
     reduction = args.loss.split('/')[-1].lower()
     if reduction == 'image':
         n = bs * ts
-    elif args.reduction.lower().startswith('mean'):
-        n = bs * h * w
+    elif reduction == 'pixel':
+        n = bs * ts * h * w
+    else:
+        raise NotImplementedError
     return n

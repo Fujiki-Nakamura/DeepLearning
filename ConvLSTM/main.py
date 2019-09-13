@@ -24,8 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--device', type=str, default='cuda:0')
-    parser.add_argument('--loss', type=str, default='MSE')
-    parser.add_argument('--reduction', type=str, default='mean')
+    parser.add_argument('--loss', type=str, default='loss/reduction')
     # optim
     parser.add_argument('--optim', type=str, default='adam')
     parser.add_argument('--lr', type=float, default=0.001)

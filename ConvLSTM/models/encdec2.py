@@ -44,7 +44,9 @@ class Decoder(nn.Module):
 class Model(nn.Module):
     def __init__(self, args):
         super(Model, self).__init__()
-        self.loss = args.loss
+        loss_and_reduction = args.loss.lower().split('/')
+        assert len(loss_and_reduction) == 2
+        self.loss, _ = loss_and_reduction
 
         self.encoder = Encoder(args)
         self.decoder = Decoder(args)
@@ -59,7 +61,7 @@ class Model(nn.Module):
         out = torch.cat(out_d, dim=2)
         bs, ts, c, h, w = out.size()
         out = self.conv1x1(out.view(bs * ts, c, h, w))
-        if not self.loss.lower() == 'bcewithlogitsloss':
+        if not self.loss == 'bce':
             out = torch.sigmoid(out)
 
         return out.view(bs, ts, -1, h, w)
