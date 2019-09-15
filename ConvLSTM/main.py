@@ -31,6 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--betas', nargs='+', type=float, default=(0.9, 0.999))
     parser.add_argument('--weight_decay', type=float, default=0.)
+    parser.add_argument('--rmsprop_alpha', type=float, default=0.99)
     parser.add_argument('--scheduler', type=str, default='')
     parser.add_argument('--milestones', nargs='+', type=int)
     parser.add_argument('--gamma', nargs='+', type=float)

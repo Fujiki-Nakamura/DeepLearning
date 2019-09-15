@@ -33,7 +33,8 @@ def get_optimizer(model, args):
     elif args.optim.lower() == 'rmsprop':
         optimizer = optim.RMSprop(
             model.parameters(),
-            lr=args.lr, alpha=0.99, weight_decay=args.weight_decay)
+            lr=args.lr, alpha=args.rmsprop_alpha, weight_decay=args.weight_decay)
+
     return optimizer
 
 
