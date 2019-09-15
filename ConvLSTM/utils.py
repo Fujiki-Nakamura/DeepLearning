@@ -38,7 +38,10 @@ def get_optimizer(model, args):
 
 
 def get_scheduler(optimizer, args):
-    if args.scheduler.lower() == 'multisteplr':
+    scheduler_name = args.scheduler.lower()
+    assert scheduler_name in ['', 'multisteplr', ]
+
+    if scheduler_name == 'multisteplr':
         scheduler = optim.lr_scheduler.MultiStepLR(
             optimizer, args.milestones, args.gamma)
     else:
