@@ -26,11 +26,14 @@ def get_loss_fn(args):
 
 
 def get_optimizer(model, args):
-    if args.optim.lower() == 'adam':
+    optim_name = args.optim.lower()
+    assert optim_name in ['adam', 'rmsprop']
+
+    if optim_name == 'adam':
         optimizer = optim.Adam(
             model.parameters(),
             lr=args.lr, betas=args.betas, weight_decay=args.weight_decay)
-    elif args.optim.lower() == 'rmsprop':
+    elif optim_name == 'rmsprop':
         optimizer = optim.RMSprop(
             model.parameters(),
             lr=args.lr, alpha=args.rmsprop_alpha, weight_decay=args.weight_decay)
