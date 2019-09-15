@@ -20,6 +20,7 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_dims', type=int, nargs='+', default=[16, ])
     parser.add_argument('--n_layers', type=int, default=1)
     parser.add_argument('--teacher_forcing_ratio', type=float, default=0.5)
+    parser.add_argument('--logit_output', action='store_true', default=False)
     # training
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--batch_size', type=int, default=128)
