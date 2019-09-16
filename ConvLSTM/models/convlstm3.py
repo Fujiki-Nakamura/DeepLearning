@@ -73,8 +73,10 @@ class ConvLSTMCell(nn.Module):
 
 class ConvLSTM(nn.Module):
 
-    def __init__(self, input_size, input_dim, hidden_dim, kernel_size, num_layers,
-                 batch_first=False, bias=True, return_all_layers=False):
+    def __init__(
+        self, input_size, input_dim, hidden_dim, kernel_size, num_layers,
+        batch_first=False, bias=True, return_all_layers=False, teacher_forcing_ratio=0.
+    ):
         super(ConvLSTM, self).__init__()
 
         self._check_kernel_size_consistency(kernel_size)
@@ -95,6 +97,7 @@ class ConvLSTM(nn.Module):
         self.batch_first = batch_first
         self.bias = bias
         self.return_all_layers = return_all_layers
+        self.teacher_forcing_ratio = teacher_forcing_ratio
 
         cell_list = []
         for i in range(0, self.num_layers):
@@ -107,6 +110,8 @@ class ConvLSTM(nn.Module):
                                           bias=self.bias))
 
         self.cell_list = nn.ModuleList(cell_list)
+
+        self.conv1x1 = None
 
     def forward(self, input_tensor, hidden_state=None, target=None):
         """
@@ -135,7 +140,8 @@ class ConvLSTM(nn.Module):
         layer_output_list = []
         last_state_list = []
 
-        seq_len = input_tensor.size(1)
+        seq_len = (
+            target.size(1) if self.teacher_forcing_ratio > 0. else input_tensor.size(1))
         cur_layer_input = input_tensor
 
         for layer_idx in range(self.num_layers):
@@ -143,9 +149,13 @@ class ConvLSTM(nn.Module):
             h, c = hidden_state[layer_idx]
             output_inner = []
             for t in range(seq_len):
+                if self.teacher_forcing_ratio > 0.:
+                    input_ = input_tensor
+                else:
+                    input_ = cur_layer_input[:, t, :, :, :]
 
                 h, c = self.cell_list[layer_idx](
-                    input_tensor=cur_layer_input[:, t, :, :, :],
+                    input_tensor=input_,
                     cur_state=[h, c])
                 output_inner.append(h)
 

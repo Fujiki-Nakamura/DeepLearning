@@ -35,8 +35,8 @@ class Decoder(nn.Module):
             num_layers=self.n_layers,
             batch_first=True, bias=True, return_all_layers=True)
 
-    def forward(self, x, hidden_list=None):
-        out, hidden_list = self.convlstm1(x, hidden_list)
+    def forward(self, x, hidden_list=None, target=None):
+        out, hidden_list = self.convlstm1(x, hidden_list, target)
 
         return out, hidden_list
 
@@ -57,7 +57,7 @@ class Model(nn.Module):
 
     def forward(self, input_, target):
         out_e, hidden_e = self.encoder(input_)
-        out_d, hidden_d = self.decoder(out_e, hidden_e)
+        out_d, hidden_d = self.decoder(out_e, hidden_e, target)
         # out_d: list of tensor(bs, ts, c=hidden_dim, h, w)
         out = torch.cat(out_d, dim=2)
         bs, ts, c, h, w = out.size()
