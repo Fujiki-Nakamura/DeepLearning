@@ -1,3 +1,4 @@
+import random
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -111,7 +112,7 @@ class ConvLSTM(nn.Module):
 
         self.cell_list = nn.ModuleList(cell_list)
 
-        self.conv1x1 = None
+        self.conv1x1 = nn.Conv2d(sum(hidden_dim), input_dim, (1, 1), stride=1, padding=0)
 
     def forward(self, input_tensor, hidden_state=None, target=None):
         """
@@ -127,6 +128,9 @@ class ConvLSTM(nn.Module):
         -------
         last_state_list, layer_output
         """
+        is_teacher_forcing = (
+            self.teacher_forcing_ratio > 0. or self.teacher_forcing_ratio == -1)
+
         if not self.batch_first:
             # (t, b, c, h, w) -> (b, t, c, h, w)
             input_tensor = input_tensor.permute(1, 0, 2, 3, 4)
@@ -137,39 +141,34 @@ class ConvLSTM(nn.Module):
         else:
             hidden_state = self._init_hidden(batch_size=input_tensor.size(0))
 
-        layer_output_list = []
-        last_state_list = []
+        seq_len = target.size(1) if is_teacher_forcing else input_tensor.size(1)
 
-        seq_len = (
-            target.size(1) if self.teacher_forcing_ratio > 0. else input_tensor.size(1))
-        cur_layer_input = input_tensor
+        input_ = input_tensor
+        logit_list = []
+        for t_i in range(seq_len):
+            h1_list = []
+            for layer_i in range(self.num_layers):
+                h0, c0 = hidden_state[layer_i]
+                h1, c1 = self.cell_list[layer_i](input_tensor=input_, cur_state=[h0, c0])
+                # update hidden_state with the new states
+                hidden_state[layer_i] = [h1, c1]
+                # h.size() = (bs, c, h, w)
+                h1_list.append(h1)
+                input_ = h1
+            stacked_h = torch.cat(h1_list, dim=1)
+            logit = self.conv1x1(stacked_h)
+            pred = torch.sigmoid(logit)
+            logit_list.append(logit)
 
-        for layer_idx in range(self.num_layers):
+            if self.teacher_forcing_ratio > random.random() and self.training:
+                # target.size() = (bs, ts, c, h, w)
+                input_ = target[:, t_i, :, :, :]
+            else:
+                input_ = pred
 
-            h, c = hidden_state[layer_idx]
-            output_inner = []
-            for t in range(seq_len):
-                if self.teacher_forcing_ratio > 0.:
-                    input_ = input_tensor
-                else:
-                    input_ = cur_layer_input[:, t, :, :, :]
-
-                h, c = self.cell_list[layer_idx](
-                    input_tensor=input_,
-                    cur_state=[h, c])
-                output_inner.append(h)
-
-            layer_output = torch.stack(output_inner, dim=1)
-            cur_layer_input = layer_output
-
-            layer_output_list.append(layer_output)
-            last_state_list.append([h, c])
-
-        if not self.return_all_layers:
-            layer_output_list = layer_output_list[-1:]
-            last_state_list = last_state_list[-1:]
-
-        return layer_output_list, last_state_list
+        # (ts, bs, c, h, w) -> (bs, ts, c, h, w)
+        return torch.stack(logit_list, dim=0).permute(1, 0, 2, 3, 4), None
+        # TODO: return hiddens as second return value?
 
     def _init_hidden(self, batch_size):
         init_states = []
